@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.revature.caliber.beans.Grade;
 import com.revature.caliber.beans.Note;
+import com.revature.caliber.beans.NoteType;
 import com.revature.caliber.services.EvaluationService;
 
 /**
@@ -112,7 +113,9 @@ public class EvaluationController {
 	@PreAuthorize("hasAnyRole('VP', 'QC', 'TRAINER','PANEL')")
 	public ResponseEntity<Integer> createNote(@Valid @RequestBody Note note) {
 		log.info("Creating note: " + note);
-		return new ResponseEntity<>(evaluationService.save(note), HttpStatus.CREATED);
+		Integer id = evaluationService.save(note);
+		calculateAverage(note);
+		return new ResponseEntity<>(id, HttpStatus.CREATED);
 	}
 
 	/**
@@ -126,9 +129,23 @@ public class EvaluationController {
 	public ResponseEntity<Note> updateNote(@Valid @RequestBody Note note) {
 		log.info("Updating note: " + note);
 		evaluationService.update(note);
+		calculateAverage(note);
 		return new ResponseEntity<>(note, HttpStatus.CREATED);
 	}
-
+	
+	/**
+	 * Checks if the given note is of the right type
+	 * If it, passes the notes weekId, and the trainees batch to the calculate average method
+	 * 
+	 * @param Note to check
+	 * @return void
+	 */
+	private void calculateAverage(Note note){
+		if(note.getType() == NoteType.QC_TRAINEE){
+			log.info("Calculating Overall note");
+			evaluationService.calculateAverage(new Integer(note.getWeek()), note.getTrainee().getBatch());
+		}
+	}
 	/*
 	 *******************************************************
 	 * TODO TRAINER NOTE SERVICES
