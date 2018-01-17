@@ -11,8 +11,9 @@ http://www.springframework.org/schema/security/spring-security.xsd">
 			error-page="/403" />
 		<security:form-login login-page="/" />
 
-		<!-- enable SSL -->
+		<!-- enable SSL 
    		<security:intercept-url pattern="/**" requires-channel="https" />
+   		-->
 
 		<security:csrf disabled="true" />
 		<security:logout invalidate-session="true"
