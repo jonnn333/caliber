@@ -52,32 +52,7 @@ angular
 								&& $scope.currentBatch !== undefined
 								&& $scope.currentBatch !== null) {
 							// Get qc batch notes for selected batch
-							caliberDelegate.qc
-									.batchNote($scope.currentBatch.batchId,
-											$scope.currentWeek)
-									.then(
-											function(notes) {
-												// If no batch note found create
-												// empty note object to be used
-												if (notes === "") {
-													$log.debug("EMPTY!");
-													$scope.bnote = new Note(
-															null,
-															null,
-															null,
-															$scope.currentWeek,
-															$scope.currentBatch,
-															null, "ROLE_QC",
-															"QC_BATCH", true);
-												}
-												// If note found set the note
-												// object to note content and
-												// face
-												else {
-													$scope.bnote = notes;
-													$scope.qcBatchAssess = notes.qcStatus;
-												}
-											});
+							$scope.getOverallQCNote();
 							// Get qc notes for trainees in selected batch for
 							// the week
 							caliberDelegate.qc
@@ -104,15 +79,14 @@ angular
 														}
 													}
 													// Push note object into
-													// array, batch set to null
-													// for trainee note always
+													// array
 													$scope.faces
 															.push(new Note(
 																	id,
 																	content,
 																	status,
 																	$scope.currentWeek,
-																	null,
+																	$scope.currentBatch,
 																	$scope.currentBatch.trainees[i],
 																	"ROLE_QC",
 																	"QC_TRAINEE",
@@ -219,7 +193,7 @@ angular
 						// Set individual note to status selected
 						$scope.faces[index].qcStatus = status;
 						// Save note
-						$scope.saveTraineeNote(index);
+						$scope.saveTraineeNote(index);						
 						$log.debug($scope.faces[index]);
 					};
 
@@ -347,6 +321,7 @@ angular
 									.then(function(id) {
 										$scope.faces[index].noteId = id;
 										$scope.processingNote = false;
+										$scope.getOverallQCNote();
 									});
 						}
 						// Update if note has a noteId
@@ -354,9 +329,39 @@ angular
 							$log.debug("update");
 							caliberDelegate.qc.updateNote($scope.faces[index]);
 							$scope.processingNote = false;
+							$scope.getOverallQCNote();
 						}
 					};
 
+					// Retrieving Batch Overall QC Note
+					$scope.getOverallQCNote = function() {
+						caliberDelegate.qc
+						.batchNote($scope.currentBatch.batchId,
+								$scope.currentWeek)
+						.then(
+								function(notes) {
+									// If no batch note found create
+									// empty note object to be used
+									if (notes === "") {
+										$log.debug("EMPTY!");
+										$scope.bnote = new Note(
+												null,
+												null,
+												null,
+												$scope.currentWeek,
+												$scope.currentBatch,
+												null, "ROLE_QC",
+												"QC_BATCH", true);
+									}
+									// If note found set the note
+									// object to note content and
+									// face
+									else {
+										$scope.bnote = notes;
+										$scope.qcBatchAssess = notes.qcStatus;
+									}
+								});
+					}
 					// Save batch note for ng-blur
 					$scope.saveQCNotes = function() {
 						$scope.processingNote = true;

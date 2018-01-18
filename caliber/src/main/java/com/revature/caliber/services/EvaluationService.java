@@ -160,7 +160,7 @@ public class EvaluationService {
 		}
 		return notes;
 	}
-	
+
 	/**
 	 * FIND TRAINEE NOTE FOR THE WEEK 
 	 * 
@@ -170,13 +170,13 @@ public class EvaluationService {
 	 */
 	public Note findTraineeNote(Integer traineeId, Integer week) {
 		Note note = noteDAO.findTraineeNote(traineeId,week);
-		
+
 		note.setBatch(null);
-		
+
 		return note;
 	}
-	
-	
+
+
 	/**
 	 * FIND QCTRAINEE NOTE FOR THE WEEK(Michael) 
 	 * 
@@ -186,9 +186,9 @@ public class EvaluationService {
 	 */
 	public Note findQCTraineeNote(Integer traineeId, Integer week) {
 		Note note = noteDAO.findQCTraineeNote(traineeId,week);
-		
+
 		note.setBatch(null);
-		
+
 		return note;
 	}
 
@@ -248,7 +248,7 @@ public class EvaluationService {
 		log.debug("Find All QC Trainee Notes for that trainee");
 		return noteDAO.findAllQCTraineeOverallNotes(traineeId);
 	}
-	
+
 	/**
 	 * Calculate the average of the Overall QC Note
 	 * 
@@ -257,62 +257,65 @@ public class EvaluationService {
 	 * @return void
 	 */
 	public void calculateAverage(Integer weekId, Batch batch) {
-		Note overallNote = noteDAO.findQCBatchNotes(batch.getBatchId(), weekId);
-		if(overallNote == null){
-			log.info("Creating new QC Overall note.");
-			overallNote = new Note();
-			overallNote.setBatch(batch);
-			overallNote.setWeek(weekId.shortValue());
-			overallNote.setQcStatus(QCStatus.Undefined);
-			overallNote.setType(NoteType.QC_BATCH);
-			overallNote.setMaxVisibility(TrainerRole.ROLE_PANEL);
-			overallNote.setQcFeedback(true);
-			noteDAO.save(overallNote);
-		}
-		log.info("Calculating Average of note of week");
-		double average = 0.0;
-		List<Note> noteList = noteDAO.findAllQCTraineeNotes(batch.getBatchId(), weekId);
-		int denominator = noteList.size();
-		for(Note currentNote :noteList){
-			switch (currentNote.getQcStatus()) {
-			case Superstar:
-				average += 4;
-				break;
-			case Good:
-				average += 3;
-				break;	
-			case Average:
-				average += 2;
-				break;	
-			case Poor:
-				average += 1;
-				break;
-			default:
-				denominator--;
-				break;
+		Note overallNote = null;
+		if(batch != null) {
+			overallNote = noteDAO.findQCBatchNotes(batch.getBatchId(), weekId);
+			if(overallNote == null) {
+				log.info("Creating new QC Overall note.");
+				overallNote = new Note();
+				overallNote.setBatch(batch);
+				overallNote.setWeek(weekId.shortValue());
+				overallNote.setQcStatus(QCStatus.Undefined);
+				overallNote.setType(NoteType.QC_BATCH);
+				overallNote.setMaxVisibility(TrainerRole.ROLE_PANEL);
+				overallNote.setQcFeedback(true);
+				noteDAO.save(overallNote);
 			}
+			log.info("Calculating Average of note of week");
+			double average = 0.0;
+			List<Note> noteList = noteDAO.findAllQCTraineeNotes(batch.getBatchId(), weekId);
+			int denominator = noteList.size();
+			for(Note currentNote :noteList){
+				switch (currentNote.getQcStatus()) {
+				case Superstar:
+					average += 4;
+					break;
+				case Good:
+					average += 3;
+					break;	
+				case Average:
+					average += 2;
+					break;	
+				case Poor:
+					average += 1;
+					break;
+				default:
+					denominator--;
+					break;
+				}
+			}
+			if(denominator != 0){
+				average = average / denominator;
+			}
+			else{
+				average = 0;
+			}
+			if(average > 2.5){
+				overallNote.setQcStatus(QCStatus.Good);
+			}
+			else if(average >= 2 && average <= 2.5){
+				overallNote.setQcStatus(QCStatus.Average);
+			}
+			else if(average > 0 && average < 2){
+				overallNote.setQcStatus(QCStatus.Poor);
+			}
+			else{
+				overallNote.setQcStatus(QCStatus.Undefined);
+			}
+			log.info("The calculated average is: " + overallNote.getQcStatus());
+			noteDAO.update(overallNote);
 		}
-		if(denominator != 0){
-			average = average / denominator;
-		}
-		else{
-			average = 0;
-		}
-		if(average > 2.5){
-			overallNote.setQcStatus(QCStatus.Good);
-		}
-		else if(average >= 2 && average <= 2.5){
-			overallNote.setQcStatus(QCStatus.Average);
-		}
-		else if(average > 0 && average < 2){
-			overallNote.setQcStatus(QCStatus.Poor);
-		}
-		else{
-			overallNote.setQcStatus(QCStatus.Undefined);
-		}
-		log.info("The calculated average is: " + overallNote.getQcStatus());
-		noteDAO.update(overallNote);
 	}
 
-	
+
 }

@@ -143,7 +143,8 @@ public class EvaluationController {
 	private void calculateAverage(Note note){
 		if(note.getType() == NoteType.QC_TRAINEE){
 			log.info("Calculating Overall note");
-			evaluationService.calculateAverage(new Integer(note.getWeek()), note.getTrainee().getBatch());
+			log.info(note);
+			evaluationService.calculateAverage(new Integer(note.getWeek()), note.getBatch());
 		}
 	}
 	/*
