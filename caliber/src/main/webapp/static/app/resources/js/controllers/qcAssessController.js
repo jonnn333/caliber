@@ -190,6 +190,7 @@ angular
 					// Function for individual qc feedback for trainee note
 					$scope.pickIndividualStatus = function(trainee, status,
 							index) {
+						$log.info($scope.faces);
 						// Set individual note to status selected
 						$scope.faces[index].qcStatus = status;
 						// Save note
@@ -327,9 +328,12 @@ angular
 						// Update if note has a noteId
 						else {
 							$log.debug("update");
-							caliberDelegate.qc.updateNote($scope.faces[index]);
-							$scope.processingNote = false;
-							$scope.getOverallQCNote();
+							caliberDelegate.qc.updateNote($scope.faces[index])
+							.then(
+								function(){
+									$scope.processingNote = false;
+									$scope.getOverallQCNote();
+								});
 						}
 					};
 

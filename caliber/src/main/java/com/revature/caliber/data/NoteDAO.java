@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
+import org.hibernate.Hibernate;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.revature.caliber.beans.Note;
 import com.revature.caliber.beans.NoteType;
+import com.revature.caliber.beans.Trainee;
 import com.revature.caliber.beans.TrainingStatus;
 
 /**
@@ -292,22 +294,29 @@ public class NoteDAO {
 	public List<Note> findAllQCTraineeNotes(Integer batchId, Integer week) {
 		log.info("Find All QC Trainee notes");
 		List<Note> noteList = sessionFactory.getCurrentSession().createCriteria(Note.class)
-				.createAlias(TRAINEE, "t", JoinType.LEFT_OUTER_JOIN)
-				.createAlias(BATCH, "bt", JoinType.LEFT_OUTER_JOIN)
+				.createAlias(TRAINEE, "t", JoinType.INNER_JOIN)
+				.createAlias(BATCH, "bt", JoinType.INNER_JOIN)
 				.createAlias("bt.trainees", "btT")
 				.add(Restrictions.ne(T_TRAINING_STATUS, TrainingStatus.Dropped)).createAlias("t.batch", "b")
 				.add(Restrictions.eq(B_BATCH_ID, batchId)).add(Restrictions.eq("week", week.shortValue()))
 				.add(Restrictions.eq(QC_FEEDBACK, true)).add(Restrictions.eq("type", NoteType.QC_TRAINEE))
 				.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).addOrder(Order.asc("week")).list();
+//		List<Note> noteList = sessionFactory.getCurrentSession().createCriteria(Note.class)
+//				.createAlias(TRAINEE, "t", JoinType.INNER_JOIN)
+//				.createAlias(BATCH, "bt", JoinType.INNER_JOIN)
+//				.add(Restrictions.ne(T_TRAINING_STATUS, TrainingStatus.Dropped)).createAlias("t.batch", "b")
+//				.add(Restrictions.eq(B_BATCH_ID, batchId)).add(Restrictions.eq("week", week.shortValue()))
+//				.add(Restrictions.eq("type", NoteType.TRAINEE))
+//				.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).addOrder(Order.asc("week")).list();
 		log.info("Retrive the noteList");
-//		for(Note note: noteList){
-//			if(note.getBatch() != null) {
-//				for(Trainee trainee: note.getBatch().getTrainees()){
-//					//log.info(trainee);
-//					Hibernate.initialize(trainee);
-//				}
-//			}
-//		}
+		for(Note note: noteList){
+			if(note.getBatch() != null) {
+				for(Trainee trainee: note.getBatch().getTrainees()){
+					//log.info(trainee);
+					Hibernate.initialize(trainee);
+				}
+			}
+		}
 		return noteList;
 	}
 

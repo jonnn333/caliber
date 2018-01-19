@@ -276,6 +276,7 @@ public class EvaluationService {
 			List<Note> noteList = noteDAO.findAllQCTraineeNotes(batch.getBatchId(), weekId);
 			int denominator = noteList.size();
 			for(Note currentNote :noteList){
+				log.info("Current Trainee and Note: " +currentNote.getTrainee().getName() +" " +currentNote.getQcStatus());
 				switch (currentNote.getQcStatus()) {
 				case Superstar:
 					average += 4;
