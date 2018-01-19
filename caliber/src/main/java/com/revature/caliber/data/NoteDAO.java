@@ -303,14 +303,7 @@ public class NoteDAO {
 				.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).addOrder(Order.asc("week")).list();
 
 		log.info("Retrive the noteList");
-//		for(Note note: noteList){
-//			if(note.getBatch() != null) {
-//				for(Trainee trainee: note.getBatch().getTrainees()){
-//					//log.info(trainee);
-////					//Hibernate.initialize(trainee);
-//				}
-//			}
-//		}
+
 		return noteList;
 	}
 
